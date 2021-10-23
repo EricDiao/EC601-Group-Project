@@ -23,6 +23,9 @@ class RScanResult:
     def _parse(self):
         pass
 
+    def get_text(self):
+        pass
+
     def dump(self):
         pass
 
