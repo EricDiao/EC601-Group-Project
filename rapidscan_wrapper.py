@@ -1,6 +1,8 @@
+from genericpath import exists
 import subprocess
 import os
 import sys
+from typing import Tuple
 
 RSCAN_LOCATION = "./rapidscan/rapidscan.py"
 PYTHON2_LOCATION = "python2"
@@ -17,17 +19,20 @@ class RScanResult:
     Contains the results from a single `RapidScan` run.
     '''
 
-    def __init__(self, result):
-        pass
+    def __init__(self, result, is_ok=True):
+        self._result = result
+        self._status = is_ok
+        self._parse()
 
     def _parse(self):
-        pass
+        if self._status:
+            raise NotImplementedError
 
     def get_text(self):
-        pass
+        return self._result
 
     def dump(self):
-        pass
+        raise NotImplementedError
 
 
 class RapidScan:
@@ -42,8 +47,38 @@ class RapidScan:
     def __init__(self):
         pass
 
-    def run(self):
-        pass
+    def _do_run(self, target):
+        assert isinstance(target, str)
+        cmd = [PYTHON2_LOCATION, RSCAN_LOCATION, target]
+
+        try:
+            rscan = subprocess.run(
+                cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            rscan.check_returncode()
+            ret = RScanResult(rscan.stdout, is_ok=True)
+        except subprocess.SubprocessError as e:
+            return RScanResult(str(e), is_ok=False)
+
+        return ret
+
+    def run(self, target):
+        '''
+        Method `RapidScan.run()`:
+
+        Run RapidScan on target `target`, return the result in `RScanResult` instance.
+        '''
+        # TODO: support target in a subnet.
+        if isinstance(target, str):
+            target = [target]
+
+        ret = []
+        for t in target:
+            ret.append(self._do_run(t))
+
+        if len(ret) == 1:
+            ret = ret[0]
+
+        return ret
 
 
 # Check if the required module do exists.
