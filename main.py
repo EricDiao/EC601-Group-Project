@@ -3,13 +3,15 @@ from rapidscan_wrapper import RapidScan
 import os
 from os import path
 import logging
+import importlib
 
 scan_backend = flask.Flask("scan_backend")
 
 
 def _import_module(module_name):
     try:
-        module = __import__(path.join("./modules", module_name, "module"))
+        module = importlib.import_module(
+            path.join("./modules", module_name, "module"))
     except ImportError:
         return None
     return module
@@ -27,9 +29,9 @@ def _install_module_dependencies(module_name):
         exit(1)
 
 
-def _for_all_modules(func):
+def _for_all_modules(func, *args, **kwargs):
     for module_name in os.listdir("./modules"):
-        func(module_name)
+        func(module_name, *args, **kwargs)
 
 
 @scan_backend.route("/api/modules/<module_name>/invoke", methods=["POST"])

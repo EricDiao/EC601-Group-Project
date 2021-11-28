@@ -21,7 +21,7 @@ class Module:
         for interface in self._find_ieee80211_interfaces():
             output = subprocess.check_output(["iw", interface, "scan"])
             results.append(
-                {"interface": interface, "scan_result": output.decode("utf-8")})
+                {"interface": interface, "scan_result": output.decode("utf-8"), "advice": self._generate_advice_fromscan_result(self._parse_scan_result(output.decode("utf-8")))})
         return {"results": results}
 
     def install_dependencies(self):
@@ -39,3 +39,9 @@ class Module:
     def _find_ieee80211_interfaces(self):
         output = subprocess.check_output(["iw", "dev"])
         return re.findall("Interface (.+)", output.decode("utf-8"))
+
+    def _parse_scan_result(self, scan_result):
+        return scan_result
+
+    def _generate_advice_fromscan_result(self, scan_result):
+        return scan_result
